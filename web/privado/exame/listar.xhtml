@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/templates/template.xhtml">
+        <ui:define name="titulo"> Listagem de Exames </ui:define>
+        <ui:define name="conteudo">
+            <h:form id="formListagem" prependId="false">
+                <p:growl/>
+                <p:commandButton value="Novo Exame" actionListener="#{ControleExame.novo()}" update=":formEdicao" process="@form"
+                                 oncomplete="PF('dlg').show();"/>
+                <div align="center">
+                    <p:panelGrid columns="11">
+                        <p:outputLabel value="Ordem:"/>
+                        <p:selectOneMenu value="#{ControleExame.dao.ordem}">
+                            <f:selectItem itemLabel="ID" itemValue="id"/>
+                            <f:selectItem itemLabel="Nome" itemValue="nome"/>
+                            <f:selectItem itemLabel="Descrição" itemValue="descricao"/>
+                            <p:ajax immediate="true" update="listagem"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Filtro:"/>
+                        <p:inputText value="#{ControleExame.dao.filtro}">
+                            <p:ajax immediate="true" event="keyup" update="listagem"/>
+                        </p:inputText>
+                        <p:commandButton value="Filtrar" update="listagem"/>
+                        <p:outputLabel value="Máximo de Objetos"/>
+                        <p:inputText value="#{ControleExame.dao.maximoObjetos}" size="5">
+                            <p:ajax event="keyup" update="listagem"/>
+                        </p:inputText>
+                        <p:commandButton action="#{ControleExame.dao.primeiro()}" icon="ui-icon-seek-first" update="listagem"/>
+                        <p:commandButton action="#{ControleExame.dao.anterior()}" icon="ui-icon-triangle-1-w" update="listagem"/>
+                        <p:commandButton action="#{ControleExame.dao.proximo()}" icon="ui-icon-triangle-1-e" update="listagem"/>
+                        <p:commandButton action="#{ControleExame.dao.ultimo()}" icon="ui-icon-seek-end" update="listagem"/>
+                    </p:panelGrid>
+                </div>
+                <p:dataTable value="#{ControleExame.dao.listaObjetos}" var="obj" id="listagem">
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:outputLabel value="#{ControleExame.dao.mensagemNavegacao}"/>
+                        </div>
+                    </f:facet>
+                    <p:column headerText="Nome" style="text-align: center">
+                        <p:outputLabel value="#{obj.nome}"/>
+                    </p:column>
+                    <p:column headerText="Descrição" style="text-align: center">
+                        <p:outputLabel value="#{obj.descricao}"/>
+                    </p:column>
+                    <p:column headerText="Ações">
+                        <div align="center">
+                            <p:commandButton icon="ui-icon-pencil" action="#{ControleExame.editar(obj.id)}" 
+                                             oncomplete="PF('dlg').show();" update=":formEdicao" process="@form"/>
+                            <p:commandButton icon="ui-icon-trash" action="#{ControleExame.remover(obj.id)}" update="@form"
+                                             process="@form" onclick="if(!confirm('Confirma a exclusão do objeto?')) 
+                                             return false "/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+        <ui:define name="dialogos">
+            <p:dialog header="Edição" widgetVar="dlg" resizable="false" modal="true" width="550" height="480">
+                <h:form id="formEdicao" prependId="false">
+                    <p:growl id="growl"/>
+                    <p:tabView id="tab">
+                        <p:tab title="Dados Principais">
+                            <p:panelGrid columns="2">
+                                <f:facet name="footer">
+                                    <div align="center">
+                                        <p:commandButton actionListener="#{ControleExame.salvar()}" icon="ui-icon-disk" 
+                                                         update=":formListagem :formEdicao" 
+                                                         oncomplete="if(!args.validationFailed) {PF('dlg').hide();}"/>
+                                    </div>
+                                </f:facet>
+                                <p:outputLabel value="ID"/>
+                                <p:inputText value="#{ControleExame.objeto.id}" readonly="true" size="5"/>
+                                <p:outputLabel value="Nome" for="txtNome"/>
+                                <p:inputText id="txtNome" value="#{ControleExame.objeto.nome}" size="50" maxlength="50"/>
+                                <p:outputLabel value="Descrição" for="txtDescricao"/>
+                                <p:inputText id="txtDescricao" value="#{ControleExame.objeto.descricao}" size="50" maxlength="50"/> 
+                            </p:panelGrid>
+                        </p:tab>
+                    </p:tabView>
+                </h:form>
+            </p:dialog>
+        </ui:define>
+    </ui:composition>
+</html>
+

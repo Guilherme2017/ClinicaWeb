@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/templates/template.xhtml">
+        <ui:define name="titulo"> Listagem de Médicos </ui:define>
+        <ui:define name="conteudo">
+            <h:form id="formListagem" prependId="false">
+                <p:growl/>
+                <p:commandButton value="Novo Medico" actionListener="#{ControleMedico.novo()}" update=":formEdicao" process="@form"
+                                 oncomplete="PF('dlg').show();"/>
+                <div align="center">
+                    <p:panelGrid columns="11">
+                        <p:outputLabel value="Ordem:"/>
+                        <p:selectOneMenu value="#{ControleMedico.dao.ordem}">
+                            <f:selectItem itemLabel="ID" itemValue="id"/>
+                            <f:selectItem itemLabel="CRM" itemValue="crm"/>
+                            <f:selectItem itemLabel="Nome" itemValue="nome"/>
+                            <f:selectItem itemLabel="Histórico" itemValue="historico"/>
+                            <p:ajax immediate="true" update="listagem"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Filtro:"/>
+                        <p:inputText value="#{ControleMedico.dao.filtro}">
+                            <p:ajax immediate="true" event="keyup" update="listagem"/>
+                        </p:inputText>
+                        <p:commandButton value="Filtrar" update="listagem"/>
+                        <p:outputLabel value="Máximo de Objetos"/>
+                        <p:inputText value="#{ControleMedico.dao.maximoObjetos}" size="5">
+                            <p:ajax event="keyup" update="listagem"/>
+                        </p:inputText>
+                        <p:commandButton action="#{ControleMedico.dao.primeiro()}" icon="ui-icon-seek-first" update="listagem"/>
+                        <p:commandButton action="#{ControleMedico.dao.anterior()}" icon="ui-icon-triangle-1-w" update="listagem"/>
+                        <p:commandButton action="#{ControleMedico.dao.proximo()}" icon="ui-icon-triangle-1-e" update="listagem"/>
+                        <p:commandButton action="#{ControleMedico.dao.ultimo()}" icon="ui-icon-seek-end" update="listagem"/>
+                    </p:panelGrid>
+                </div>
+                <p:dataTable value="#{ControleMedico.dao.listaObjetos}" var="obj" id="listagem">
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:outputLabel value="#{ControleMedico.dao.mensagemNavegacao}"/>
+                        </div>
+                    </f:facet>
+                    <p:column headerText="CRM" style="text-align: center">
+                        <p:outputLabel value="#{obj.crm}"/>
+                    </p:column>
+                    <p:column headerText="Nome" style="text-align: center">
+                        <p:outputLabel value="#{obj.nome}"/>
+                    </p:column>
+                    <p:column headerText="Nascimento">
+                        <p:outputLabel value="#{obj.nascimento}">
+	                 <f:converter converterId="ConverterCalendar"/>
+                    </p:outputLabel> 
+                    </p:column>
+                    <p:column headerText="Telefone">
+                        <p:outputLabel value="#{obj.telefone}"/>
+                    </p:column>
+                    <p:column headerText="Sexo" style="text-align: center">
+                        <p:outputLabel value="#{obj.sexo}"/>
+                    </p:column>
+                    <p:column headerText="Historico" style="text-align: center">
+                        <p:outputLabel value="#{obj.historico}"/>
+                    </p:column>
+                    <p:column headerText="Peso">
+                        <p:outputLabel value="#{obj.peso}"/>
+                    </p:column>
+                    <p:column headerText="Altura">
+                        <p:outputLabel value="#{obj.altura}"/>
+                    </p:column>
+                     <p:column headerText="Especialidade">
+                        <p:outputLabel value="#{obj.especialidade.descricao}"/>
+                    </p:column>
+                    <p:column headerText="Ações">
+                        <div align="center">
+                            <p:commandButton icon="ui-icon-pencil" action="#{ControleMedico.editar(obj.id)}" 
+                                             oncomplete="PF('dlg').show();" update=":formEdicao" process="@form"/>
+                            <p:commandButton icon="ui-icon-trash" action="#{ControleMedico.remover(obj.id)}" update="@form"
+                                             process="@form" onclick="if(!confirm('Confirma a exclusão do objeto?')) 
+                                             return false "/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+        <ui:define name="dialogos">
+            <p:dialog header="Edição" widgetVar="dlg" resizable="false" modal="true" width="550" height="480">
+                <h:form id="formEdicao" prependId="false">
+                    <p:growl id="growl"/>
+                    <p:tabView id="tab">
+                        <p:tab title="Dados Principais">
+                            <p:panelGrid columns="2">
+                                <f:facet name="footer">
+                                    <div align="center">
+                                        <p:commandButton actionListener="#{ControleMedico.salvar()}" icon="ui-icon-disk" 
+                                                         update=":formListagem :formEdicao" 
+                                                         oncomplete="if(!args.validationFailed) {PF('dlg').hide();}"/>
+                                    </div>
+                                </f:facet>
+                                <p:outputLabel value="ID"/>
+                                <p:inputText value="#{ControleMedico.objeto.id}" readonly="true" size="5"/>
+                                <p:outputLabel value="CRM" for="txtCRM"/>
+                                <p:inputText id="txtCRM" value="#{ControleMedico.objeto.crm}" size="20" maxlength="20"/>
+                                <p:outputLabel value="Nome" for="txtNome"/>
+                                <p:inputText id="txtNome" value="#{ControleMedico.objeto.nome}" size="50" maxlength="50"/>
+                                <p:outputLabel value="Nascimento" for="txtNascimento"/>
+                                <p:calendar value="#{ControleMedico.objeto.nascimento}" id="txtNascimento" mask="true" navigator="true"
+                                            pattern="dd/MM/yyyy">
+                                    <f:converter converterId="ConverterCalendar"/>
+                                </p:calendar>
+                                <p:outputLabel value="Telefone" for="txtTelefone"/>
+                                <p:inputMask id="txtTelefone" value="#{ControlePaciente.objeto.telefone}" mask="(99)99999-9999"/>
+                                <p:outputLabel value="Sexo" for="txtSexo"/>
+                                <p:inputText id="txtSexo" value="#{ControleMedico.objeto.sexo}" size="1" maxlength="1"/>
+                                <p:outputLabel value="Historico" for="txtHistorico"/>
+                                <p:inputText id="txtHistorico" value="#{ControleMedico.objeto.historico}" size="50" maxlength="50"/>
+                                <p:outputLabel value="Peso" for="txtPeso"/>
+                                <p:inputText id="txtPeso" value="#{ControleMedico.objeto.peso}"/>
+                                <p:outputLabel value="Altura" for="txtAltura"/>
+                                <p:inputText id="txtAltura" value="#{ControleMedico.objeto.altura}"/>
+                                <p:outputLabel value="Especialidade" for="selectEspecialidade"/>
+                                <p:selectOneMenu value="#{ControleMedico.objeto.especialidade}" id="selectEspecialidade">
+                                    <f:converter converterId="ConverterEspecialidade"/>
+                                    <f:selectItems value="#{ControleMedico.daoEspecialidade.listaTodos}" var="es" itemLabel="#{es.descricao}"/>
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+                        </p:tab>
+                    </p:tabView>
+                </h:form>
+            </p:dialog>
+        </ui:define>
+    </ui:composition>
+</html>
+
+
